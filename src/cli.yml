@@ -1,0 +1,44 @@
+name: did
+version: "0.1"
+author: Simon Siggaard <simon@siggaard.io>
+about: did is a micro-journaling tool---Record what you did, in bite-sized note form.
+args:
+    - NOTE:
+        help: The note explaining what you did
+subcommands:
+  - what:
+      subcommands:
+        - today:
+            about: List everything you did today
+        - yesterday:
+            about: List everything you did yesterday
+        - week:
+            about: List everything you did the last 7 days
+        - this-week:
+            about: List everything you did this week
+        - month:
+            about: List everything you did the last 30 days
+        - this-month:
+            about: List everything you did this month
+        - year:
+            about: List everything you did the last 365 days
+        - this-year:
+            about: List everything you did this year
+        - on:
+            about: List everything you did on a specific date
+            args:
+              DATE:
+                help: List everything you did on the specified date
+                required: true
+        - since:
+            about: List everything you did since a specific date
+            args:
+              DATE:
+                help: List everything you did since the specified date
+                required: true
+  - I:
+      about: Search for things you did
+      args:
+        - STRING:
+            help: Returns notes that contain your search string
+            required: true
