@@ -5,7 +5,24 @@ use clap::App;
 use postgres::{Client, NoTls};
 use std::{convert, error::Error, fmt};
 
-#[derive(Debug)]
+fn main() -> Result<(), Box<dyn Error>> {
+    let yaml = load_yaml!("cli.yml");
+    let matches = App::from_yaml(yaml).get_matches();
+
+    if let Some(note) = matches.value_of("NOTE") {
+        did(note)?;
+        return Ok(());
+    }
+
+    if let Some(matches) = matches.subcommand_matches("what") {
+        for row in what_rows(matches)? {
+            println!("{}", Note::from(row));
+        }
+    }
+
+    Ok(())
+}
+
 struct Note {
     id: i32,
     date: NaiveDate,
@@ -28,20 +45,10 @@ impl convert::From<postgres::Row> for Note {
     }
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let yaml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yaml).get_matches();
-
-    if let Some(note) = matches.value_of("NOTE") {
-        did(note)?;
-        return Ok(());
-    }
-
-    if let Some(matches) = matches.subcommand_matches("what") {
-        for row in what_rows(matches)? {
-            println!("{}", Note::from(row));
-        }
-    }
+fn did(note: &str) -> Result<(), postgres::Error> {
+    let mut conn = connection()?;
+    conn.execute("INSERT INTO notes (note) VALUES ($1)", &[&note])?;
+    println!("> {}", note);
 
     Ok(())
 }
@@ -93,12 +100,4 @@ fn connection() -> Result<Client, postgres::Error> {
         "postgresql://siggaard:password@localhost:5438/database",
         NoTls,
     )
-}
-
-fn did(note: &str) -> Result<(), postgres::Error> {
-    let mut conn = connection()?;
-    conn.execute("INSERT INTO notes (note) VALUES ($1)", &[&note])?;
-    println!("> {}", note);
-
-    Ok(())
 }
